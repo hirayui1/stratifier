@@ -25,8 +25,8 @@ public class GitHubService {
         return restTemplate.getForObject(url, Repo[].class);
     }
 
-    public GitHubUser[] getRepoContributors(String owner, String repo) {
-        String url = String.format("https://api.github.com/repos/%s/%s/contributors", owner, repo);
+    public GitHubUser[] getRepoContributors(String owner, String repo, int page) {
+        String url = String.format("https://api.github.com/repos/%s/%s/contributors?per_page=100&page=%s", owner, repo, page);
         return restTemplate.getForObject(url, GitHubUser[].class);
     }
 }

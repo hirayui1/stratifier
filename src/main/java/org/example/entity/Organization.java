@@ -1,10 +1,11 @@
 package org.example.entity;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class Organization {
     private String login;
-    private Repo[] repos;
+    private List[] repos;
     private String[] repos_url;
 
     public String getLogin() {
@@ -15,11 +16,11 @@ public class Organization {
         this.login = login;
     }
 
-    public Repo[] getRepos() {
+    public List[] getRepos() {
         return repos;
     }
 
-    public void setRepos(Repo[] repos) {
+    public void setRepos(List[] repos) {
         this.repos = repos;
     }
 

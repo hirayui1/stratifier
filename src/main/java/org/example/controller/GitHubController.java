@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/github")
 public class GitHubController {
     private final GitHubService gitHubService;
-    Organization organization;
+    private Organization organization;
 
     public GitHubController(GitHubService gitHubService) {
         this.gitHubService = gitHubService;
@@ -26,24 +27,37 @@ public class GitHubController {
     // returns to the given map
     // TODO: duplicate null checks, could make a method out of it
     // TODO: second time querying doesn't give the correct id (because of null check, find a better way)
-    // TODO: handle the error of path not existing
-    @GetMapping("/orgs/{org}")
-    public String getGitHubOrg(@PathVariable String org) {
-        // trying to not fetch data every time - (make-shift caching?) - maybe deque with a list of 10 to keep the last 10 orgs in "cache"
-        if (organization == null) {
-            organization = gitHubService.getGitHubOrgProfile(org);
-        }
-        return organization.getLogin();
+
+    @GetMapping("/org/{owner}/contributors")
+    public List<GitHubUser> getContributorsByRepo(@PathVariable String owner) {
+        List<Repo> repoList = getOrgRepos(owner);
+
+        return repoList.parallelStream()
+                .flatMap(repo -> {
+                    ArrayList<GitHubUser> contributors = new ArrayList<>();
+                    int page = 0;
+
+                    String formattedRepoName = repo.getFull_name().substring(repo.getFull_name().indexOf("/"));
+
+                    while (true) {
+                        GitHubUser[] contributorPerPage = gitHubService.getRepoContributors(owner, formattedRepoName, page);
+                        contributors.addAll(Arrays.asList(contributorPerPage));
+
+                        if (contributorPerPage.length != 100) {
+                            break;
+                        }
+
+                        page++;
+                    }
+
+                    return contributors.stream();
+                }).collect(Collectors.toList());
     }
 
-    @GetMapping("/repos/{owner}/{repo}/contributors")
-    public GitHubUser[] getContributorsByRepo(@PathVariable String owner, @PathVariable String repo) {
-        return gitHubService.getRepoContributors(owner, repo);
-    }
 
-    @GetMapping("/orgs/{org}/repos")
-    public List<String> getOrgRepos(@PathVariable String org) {
+    public List<Repo> getOrgRepos(String org) {
         Repo[] repos = gitHubService.getGitHubOrgRepos(org);
-        return Arrays.stream(repos).map(Repo::getFull_name).collect(Collectors.toList());
+
+        return Arrays.asList(repos);
     }
 }

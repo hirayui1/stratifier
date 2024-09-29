@@ -18,4 +18,12 @@ public class Repo {
     public void setFull_name(String full_name) {
         this.full_name = full_name;
     }
+
+    public HashMap<String, GitHubUser> getContributors() {
+        return contributors;
+    }
+
+    public void setContributors(HashMap<String, GitHubUser> contributors) {
+        this.contributors = contributors;
+    }
 }
