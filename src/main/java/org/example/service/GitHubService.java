@@ -1,7 +1,6 @@
 package org.example.service;
 
 import org.example.entity.GitHubUser;
-import org.example.entity.Organization;
 import org.example.entity.Repo;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,13 +14,8 @@ public class GitHubService {
     }
 
     // loads the data from API
-    public Organization getGitHubOrgProfile(String org) {
-        String url = String.format("https://api.github.com/orgs/%s", org);
-        return restTemplate.getForObject(url, Organization.class);
-    }
-
-    public Repo[] getGitHubOrgRepos(String org) {
-        String url = String.format("https://api.github.com/orgs/%s/repos", org);
+    public Repo[] getGitHubOrgRepos(String org, int page) {
+        String url = String.format("https://api.github.com/orgs/%s/repos?per_page=100?page=%s", org, page);
         return restTemplate.getForObject(url, Repo[].class);
     }
 

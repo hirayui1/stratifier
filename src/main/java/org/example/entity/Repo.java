@@ -3,13 +3,8 @@ package org.example.entity;
 import java.util.HashMap;
 
 public class Repo {
-    private String name;
     private String full_name;
-    private HashMap<String, GitHubUser> contributors;
 
-    public Repo() {
-
-    }
 
     public String getFull_name() {
         return full_name;
@@ -17,13 +12,5 @@ public class Repo {
 
     public void setFull_name(String full_name) {
         this.full_name = full_name;
-    }
-
-    public HashMap<String, GitHubUser> getContributors() {
-        return contributors;
-    }
-
-    public void setContributors(HashMap<String, GitHubUser> contributors) {
-        this.contributors = contributors;
     }
 }

@@ -19,4 +19,8 @@ public class GitHubUser {
     public void setLogin(String login) {
         this.login = login;
     }
+
+    public void sumCont(int dupe) {
+        contributions += dupe;
+    }
 }
