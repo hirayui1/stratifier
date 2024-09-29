@@ -1,9 +1,17 @@
-package org.example;
+package org.example.controller;
 
+import org.example.entity.GitHubUser;
+import org.example.entity.Organization;
+import org.example.entity.Repo;
+import org.example.service.GitHubService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/github")
@@ -28,11 +36,14 @@ public class GitHubController {
         return organization.getLogin();
     }
 
-    @GetMapping("/orgs/{org}/id")
-    public int getGitHubOrgId(@PathVariable String org) {
-        if (organization == null) {
-            getGitHubOrg(org);
-        }
-        return organization.getId();
+    @GetMapping("/repos/{owner}/{repo}/contributors")
+    public GitHubUser[] getContributorsByRepo(@PathVariable String owner, @PathVariable String repo) {
+        return gitHubService.getRepoContributors(owner, repo);
+    }
+
+    @GetMapping("/orgs/{org}/repos")
+    public List<String> getOrgRepos(@PathVariable String org) {
+        Repo[] repos = gitHubService.getGitHubOrgRepos(org);
+        return Arrays.stream(repos).map(Repo::getFull_name).collect(Collectors.toList());
     }
 }
