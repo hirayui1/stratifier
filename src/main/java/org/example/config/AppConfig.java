@@ -1,4 +1,4 @@
-package org.example;
+package org.example.config;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +26,7 @@ public class AppConfig {
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setInterceptors(Collections.singletonList(gitHubTokenInterceptor()));
-
+        restTemplate.setErrorHandler(new CustomResponseErrorHandler());
         return restTemplate;
     }
 
