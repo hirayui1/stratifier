@@ -94,13 +94,7 @@ public class GitHubController {
 
         while (true) {
             Repo[] repos;
-            try {
-                repos = gitHubService.getGitHubOrgRepos(org, page); // fetching repos per page
-
-            } catch (RestClientException e) {
-                System.err.println(Arrays.toString(gitHubService.getGitHubOrgRepos(org, page)));
-                break;
-            }
+            repos = gitHubService.getGitHubOrgRepos(org, page); // fetching repos per page
 
             // break conditions
             if (repos == null ) {
