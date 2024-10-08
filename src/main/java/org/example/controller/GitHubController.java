@@ -120,8 +120,6 @@ public class GitHubController {
     @GetMapping("/repos/{org}")
     public List<Repo> getOrgRepos2(@PathVariable String org) {
 
-
-
         return IntStream.iterate(0, page -> page + 1)  // Start from page 0
                 .parallel()
                 .mapToObj(page -> gitHubService.getGitHubOrgRepos(org, page))  // Fetch each page of repos
