@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import org.example.dto.ContributorsDTO;
 import org.example.entity.GitHubUser;
 import org.example.entity.Repo;
 import org.example.service.GitHubService;
@@ -34,7 +35,7 @@ public class GitHubController {
 
     // returns to the requested path
     @GetMapping("/org/{owner}/contributors")
-    public List<GitHubUser> getContributorsByRepo(@PathVariable String owner) {
+    public ContributorsDTO getContributorsByRepo(@PathVariable String owner) {
 
         Instant start = Instant.now();
         List<Repo> repoList = getOrgRepos(owner);
@@ -82,10 +83,13 @@ public class GitHubController {
         contributorsList = new ArrayList<>(contributorMap.values());
 
         contributorsList.sort(Comparator.comparingInt(GitHubUser::getContributions).reversed());
+
+        ContributorsDTO dto = new ContributorsDTO(contributorsList.size(), contributorsList); // wrap the list of contributors with a class that gets .size() as int count
+
         // measuring time here
         measureFinishAndPrint(start);
 
-        return contributorsList;
+        return dto;
     }
 
     public List<Repo> getOrgRepos(String org) {
