@@ -1,6 +1,6 @@
 Stratifier allows you to view and list the highest contributor across an organization on GitHub. 
 
-Currently, it is quite slow as it takes 139 seconds on Google's 2775 repositories. I will be working on making it faster with dealing with large datasets.
+Currently, it is quite slow as it takes 139 seconds on Google's 2775 repositories. I will be working on making it faster on dealing with large datasets.
 
 Use this program by simply running it and searching for `localhost:8080/github/org/{org-name}/contributors` on your browser, but if you want to try searching for large scale organizations (such as google), you will have to generate a fine-grained token from your GitHub profile settings. 
 
