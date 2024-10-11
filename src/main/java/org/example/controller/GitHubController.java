@@ -38,7 +38,7 @@ public class GitHubController {
     public ContributorsDTO getContributorsByRepo(@PathVariable String owner) {
 
         Instant start = Instant.now();
-        List<Repo> repoList = getOrgRepos(owner);
+        List<Repo> repoList = getOrgRepos2(owner);
 
         // concurrent GET request to api.github for each repo the org owns
         List<GitHubUser> contributorsList = repoList
@@ -51,12 +51,9 @@ public class GitHubController {
 
                     while (true) {
                         GitHubUser[] contributorPerPage;
-                        try {
-                            contributorPerPage = gitHubService.getRepoContributors(owner, formattedRepoName, page); // fetching contributors per repo per page
-                        } catch (RestClientException e) {
-                            System.out.format("%s's %s had unfitting json format at page %s.", owner, formattedRepoName, page);
-                            continue;
-                        }
+
+                        contributorPerPage = gitHubService.getRepoContributors(owner, formattedRepoName, page); // fetching contributors per repo per page
+
 
                         // break conditions
                         if (contributorPerPage == null) {
