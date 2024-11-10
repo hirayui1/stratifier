@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.Collections;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 @PropertySource("classpath:config.properties")
@@ -23,17 +20,9 @@ public class AppConfig {
     }
 
     @Bean
-    public RestTemplate restTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setInterceptors(Collections.singletonList(gitHubTokenInterceptor()));
-        restTemplate.setErrorHandler(new CustomResponseErrorHandler());
-        return restTemplate;
-    }
-
-    private ClientHttpRequestInterceptor gitHubTokenInterceptor() {
-        return (request, body, execution) -> {
-           request.getHeaders().add("Authorization", "token " + token);
-           return execution.execute(request, body);
-        };
+    public WebClient webClient() {
+        return WebClient.builder()
+                .defaultHeader("Authorization", "token" + token)
+                .build();
     }
 }

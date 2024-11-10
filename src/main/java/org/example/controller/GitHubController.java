@@ -1,22 +1,13 @@
 package org.example.controller;
 
-import org.example.dto.ContributorsDTO;
-import org.example.entity.GitHubUser;
-import org.example.entity.Repo;
 import org.example.service.GitHubService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestClientException;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.ParallelFlux;
 
 @RestController
 @RequestMapping("/github")
@@ -27,109 +18,20 @@ public class GitHubController {
         this.gitHubService = gitHubService;
     }
 
-
-    @GetMapping("/org/{owner}")
-    public String checkReposResponse(@PathVariable String owner) {
-        return gitHubService.getGitHubOrgRepos2(owner);
+    @GetMapping("org/{org}")
+    public Mono<String> getOrg(@PathVariable String org) {
+        return gitHubService.getOrgAPICall(org);
     }
 
-    // returns to the requested path
-    @GetMapping("/org/{owner}/contributors")
-    public ContributorsDTO getContributorsByRepo(@PathVariable String owner) {
-
-        Instant start = Instant.now();
-        List<Repo> repoList = getOrgRepos2(owner);
-
-        // concurrent GET request to api.github for each repo the org owns
-        List<GitHubUser> contributorsList = repoList
-                .parallelStream()
-                .flatMap(repo -> {
-                    ArrayList<GitHubUser> contributors = new ArrayList<>(); // creating a list to hold all the contributors from every repository
-
-                    int page = 0;
-                    String formattedRepoName = repo.getFull_name().substring(repo.getFull_name().indexOf("/") + 1); // extracting repo name from full name
-
-                    while (true) {
-                        GitHubUser[] contributorPerPage;
-
-                        contributorPerPage = gitHubService.getRepoContributors(owner, formattedRepoName, page); // fetching contributors per repo per page
-
-
-                        // break conditions
-                        if (contributorPerPage == null) {
-                            break;
-                        } else if (contributorPerPage.length != 100) {
-                            contributors.addAll(Arrays.asList(contributorPerPage));
-                            break;
-                        } else {
-                            contributors.addAll(Arrays.asList(contributorPerPage));
-                            page++;
-                        }
-                    }
-                    return contributors.stream();
-                }).collect(Collectors.toList());
-
-        Map<String, GitHubUser> contributorMap = new ConcurrentHashMap<>();
-
-        // weeding out the duplicates and summing duplicate values concurrently
-        contributorsList.parallelStream()
-                        .forEach(user -> contributorMap
-                                .computeIfAbsent(user.getLogin(), login -> user)
-                                .sumCont(user.getContributions()));
-
-        contributorsList = new ArrayList<>(contributorMap.values());
-
-        contributorsList.sort(Comparator.comparingInt(GitHubUser::getContributions).reversed());
-
-        ContributorsDTO dto = new ContributorsDTO(contributorsList.size(), contributorsList); // wrap the list of contributors with a class that gets .size() as int count
-
-        // measuring time here
-        measureFinishAndPrint(start);
-
-        return dto;
+    @GetMapping("org/{org}/repos")
+    public Flux<String> getOrgRepoNames(@PathVariable String org) {
+        return fetchRepoNames(org);
     }
 
-    public List<Repo> getOrgRepos(String org) {
-        ArrayList<Repo> repoList = new ArrayList<>();
-        int page = 0;
-
-        while (true) {
-            Repo[] repos;
-            repos = gitHubService.getGitHubOrgRepos(org, page); // fetching repos per page
-
-            // break conditions
-            if (repos == null ) {
-                break;
-            } else if (repos.length != 100) {
-                repoList.addAll(Arrays.asList(repos));
-                break;
-            } else {
-                repoList.addAll(Arrays.asList(repos));
-                page++;
-            }
-        }
-        System.out.println(repoList.size());
-        return repoList;
-    }
-
-    @GetMapping("/repos/{org}")
-    public List<Repo> getOrgRepos2(@PathVariable String org) {
-
-        return IntStream.iterate(0, page -> page + 1)  // Start from page 0
+    private Flux<String> fetchRepoNames(String org) { // Parallel vs Flux
+        return Flux.range(0, 10)
                 .parallel()
-                .mapToObj(page -> gitHubService.getGitHubOrgRepos(org, page))  // Fetch each page of repos
-                .takeWhile(array -> array != null && array.length > 0) // Stop when an empty page is found
-                .flatMap(Arrays::stream)  // Flatten each List<Repo> into a Stream<Repo>
-                .collect(Collectors.toList());
-    }
-
-    public void measureFinishAndPrint(Instant start) {
-        Instant end = Instant.now();
-        Duration duration = Duration.between(start, end);
-
-        long seconds = duration.getSeconds();
-        long milliseconds = duration.toMillis();
-
-        System.out.println("Total Time: " + seconds + " seconds and " + (milliseconds % 1000) + " milliseconds");
+                .flatMap(s -> gitHubService.getOrgRepoNames(org))
+                .sequential();
     }
 }
