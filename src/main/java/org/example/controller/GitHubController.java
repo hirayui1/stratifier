@@ -1,13 +1,15 @@
 package org.example.controller;
 
+import org.example.entity.Repo;
 import org.example.service.GitHubService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.ParallelFlux;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/github")
@@ -24,14 +26,11 @@ public class GitHubController {
     }
 
     @GetMapping("org/{org}/repos")
-    public Flux<String> getOrgRepoNames(@PathVariable String org) {
+    public List<Repo> getOrgRepoNames(@PathVariable String org) {
         return fetchRepoNames(org);
     }
 
-    private Flux<String> fetchRepoNames(String org) { // Parallel vs Flux
-        return Flux.range(0, 10)
-                .parallel()
-                .flatMap(s -> gitHubService.getOrgRepoNames(org))
-                .sequential();
+    private List<Repo> fetchRepoNames(String org) { // Parallel vs Flux
+        return null;
     }
 }
